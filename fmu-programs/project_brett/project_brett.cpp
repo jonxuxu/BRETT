@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright 2019 NXP.
+ *   Copyright (c) 2013-2015 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,9 +12,9 @@
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -30,73 +30,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
+
 /**
- * @file hg_temp.cpp
+ * @file project_brett.cpp
  *
- * Example app for temperature measurement with Melaxis MLX90614 using I2C
  *
- * @author Katrin Moritz
- * @author Leo Mustafa
+ *
+ * @author William Qin <w29qin@uwaterloo.ca>
  */
 
-/* Includes */
 #include "hg_temp.h"
-#include <getopt.h>
 
-/* Constructor */
-HG_Temp::HG_Temp() : I2C("MLX90614", "/dev/mlx90614", PX4_I2C_BUS_EXPANSION, MLX90614_I2CADDR, MLX90614_BUS_SPEED)
+extern "C" __EXPORT int project_brett_main(int argc, char *argv[]);
+
+/* main */
+int project_brett_main(int argc, char *argv[])
 {
-	HG_Temp::init();
-}
+	PX4_INFO("Hello Hovergames TEMP!");
 
-/* Initialization of I2C device */
-int HG_Temp::init()
-{
-	int ret = OK;
+	HG_Temp temp;
 
-	/* do I2C init (and probe) first */
-	ret = I2C::init();
+	int counter = 20;
 
-	/* if probe/setup failed, bail now */
-	if (ret != OK) {
-		DEVICE_DEBUG("I2C setup failed");
-		return ret;
-	};
+	// prints ambient and object temperature in console 20 times
+	printf("%02i |  Ambient Temp |  Object Temp\n", counter);
+	printf("-----------------------------------\n");
 
-	return ret;
-}
-
-/* Read temperature from I2C bus */
-double HG_Temp::readTemp(uint8_t reg)
-{
-	double temp = 0;
-	const uint8_t cmd = reg;
-	uint8_t data[4] = {0};
-	uint16_t data_temp = 0;
-
-	if (OK != transfer(&cmd, 1, data, 4)) {
-		PX4_ERR("No Data received");
-
-	} else {
-		// switching read bytes
-		data_temp = (data[0] | data[1] << 8);
-		temp = data_temp;
-		// Conversion to degrees Celsius
-		temp *= .02;
-		temp -= 273.15;
+	for (int i = 1; i <= counter; i++) {
+		printf("%02i |  %+2.2f  |  %+2.2f  \n", i, temp.readAmbientTempC(), temp.readObjectTempC());
+		sleep(1);
 	}
 
-	return temp;
-} /* end: readTemp */
+	PX4_INFO("Hovergames TEMP exit"); // print in console 
 
-/* read object temperature */
-double HG_Temp::readObjectTempC(void)
-{
-	return readTemp(MLX90614_TOBJ1);
-}
-
-/* read ambient temperature */
-double HG_Temp::readAmbientTempC(void)
-{
-	return readTemp(MLX90614_TA);
-}
+	return 0;
+} /* end: main */

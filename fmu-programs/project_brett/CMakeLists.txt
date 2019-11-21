@@ -12,8 +12,8 @@
 #    notice, this list of conditions and the following disclaimer in
 #    the documentation and/or other materials provided with the
 #    distribution.
-# 3. Neither the name of the copyright holder nor the names of its 
-#	 contributors may be used to endorse or promote products derived 
+# 3. Neither the name of the copyright holder nor the names of its
+#	 contributors may be used to endorse or promote products derived
 #	 from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,11 +32,11 @@
 ############################################################################
 
 px4_add_module(
-	MODULE examples__hg_temp
-	MAIN hg_temp
+	MODULE examples__project_brett
+	MAIN project_brett
 	STACK_MAIN 2000
 	COMPILE_FLAGS -O0
 	SRCS
-		hg_temp.cpp
+		project_brett.cpp
 	DEPENDS
 	)
