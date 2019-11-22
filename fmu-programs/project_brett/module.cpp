@@ -59,7 +59,6 @@ int Module::print_status()
 
 int Module::custom_command(int argc, char *argv[])
 {
-
 	// if (!is_running()) {
 	// 	print_usage("not running");
 	// 	return 1;
@@ -70,7 +69,6 @@ int Module::custom_command(int argc, char *argv[])
 	// 	get_instance()->close_file();
 	// 	return 0;
 	// }
-
 
 	return print_usage("unknown command");
 }
@@ -97,14 +95,16 @@ Module *Module::instantiate(int argc, char *argv[])
 {
 	char *file_name = NULL;
 	bool log_flag = false;
+	bool dummy_flag = false;
 	bool error_flag = false;
+	int frequency_param = 2;
 
 	int myoptind = 1;
 	int ch;
 	const char *myoptarg = nullptr;
 
 	// parse CLI arguments
-	while ((ch = px4_getopt(argc, argv, "n:l", &myoptind, &myoptarg)) != EOF) {
+	while ((ch = px4_getopt(argc, argv, "n:f:l:d", &myoptind, &myoptarg)) != EOF) {
 		switch (ch) {
 			case 'n':
 			{
@@ -116,8 +116,16 @@ Module *Module::instantiate(int argc, char *argv[])
 				break;
 			}
 
+			case 'f':
+				frequency_param = (int)strtol(myoptarg, nullptr, 10);
+				break;
+
 			case 'l':
 				log_flag = true;
+				break;
+
+			case 'd':
+				dummy_flag = true;
 				break;
 
 			case '?':
@@ -148,16 +156,16 @@ Module *Module::instantiate(int argc, char *argv[])
 	}
 
 	instance->log_flag = log_flag;
+	instance->dummy_flag = dummy_flag;
 	FILE *output_file = fopen(file_name, "w");
 	if (output_file == NULL) {
 		PX4_ERR("File failed to open");
 	}
 	instance->output_file = output_file;
-
-	instance->file_open = true;
+	instance->frequency = frequency_param;
 
 	printf("%s\n", file_name);
-	printf("%d\n", instance->log_flag);
+	printf("Logging: %d, Frequency: %d\n", instance->log_flag, instance->frequency);
 
 	fprintf(instance->output_file, "time,x,y,ambient_temp,obj_temp\n");
 
@@ -166,12 +174,6 @@ Module *Module::instantiate(int argc, char *argv[])
 	return instance;
 }
 
-// void Module::close_file() {
-// 	fclose(get_instance()->output_file);
-// 	get_instance()->file_open = false;
-// 	PX4_INFO("File closed. The program is now inactive. \nTerminate the program with 'project_brett stop'.\n");
-// }
-
 Module::Module()
 	: ModuleParams(nullptr)
 {
@@ -179,13 +181,26 @@ Module::Module()
 
 void Module::run()
 {
-
 	// Run the loop synchronized to the gps topic publication
 	int position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
+
+	/* limit the update rate to 5 Hz */
+	orb_set_interval(position_sub, (int)(1000/get_instance()->frequency));
 
 	px4_pollfd_struct_t fds[1];
 	fds[0].fd = position_sub;
 	fds[0].events = POLLIN;
+
+	struct vehicle_local_position_s raw;
+
+	// unsigned long long initial_time = 0;
+	// bool time_set = false;
+
+	// double dummy_x = 0;
+	// double dummy_y = 0;
+	// double dummy_max_x = 400;
+	// double dummy_max_y = 400;
+	// double dummy_row_height = 20;
 
 	// initialize parameters
 	parameters_update(true);
@@ -205,30 +220,44 @@ void Module::run()
 			continue;
 
 		} else if (fds[0].revents & POLLIN) {
-
-			struct vehicle_local_position_s raw;
 			orb_copy(ORB_ID(vehicle_local_position), position_sub, &raw);
 
-			// HG_Temp temp;
-
 			unsigned long long raw_timestamp = raw.timestamp;
+			// if (!time_set) {
+			// 	initial_time = raw_timestamp;
+			// 	time_set = true;
+			// }
+			// unsigned long long elapsed_time = raw_timestamp - initial_time;
+
 			double raw_x = (double)raw.x;
 			double raw_y = (double)raw.y;
+
+			if (get_instance()->dummy_flag) {
+
+			}
+
 			double ambient_temp = 0.0;
 			double obj_temp = 0.0;
-			// ambient_temp = temp.readAmbientTempC();
-			// obj_temp = temp.readObjectTempC();
+			ambient_temp = get_instance()->temp_sensor.readAmbientTempC();
+			obj_temp = get_instance()->temp_sensor.readObjectTempC();
 
-			// if (get_instance()->log_flag) {
-				PX4_INFO("Time: %llu, X: %12.8f, Y: %12.8f, Ambient Temp: %.4f, Obj Temp: %.4f\n", raw_timestamp, raw_x, raw_y, ambient_temp, obj_temp);
-			// }
-
-			if (get_instance()->file_open) {
-				fprintf(get_instance()->output_file, "%llu,%.8f,%.8f,%.8f,%.8f\n", raw_timestamp, raw_x, raw_y, ambient_temp, obj_temp);
+			FILE* file = get_instance()->output_file;
+			if (file) {
+				fprintf(file, "%llu,%.8f,%.8f,%.8f,%.8f\n", raw_timestamp, raw_x, raw_y, ambient_temp, obj_temp);
+				if (get_instance()->log_flag) {
+					printf("Time: %llu, X: %.8f, Y: %.8f, Ambient Temp: %.4f, Obj Temp: %.4f\n", raw_timestamp, raw_x, raw_y, ambient_temp, obj_temp);
+				}
 			}
 		}
 
 		parameters_update();
+	}
+
+	printf("Run done\n");
+
+	FILE* file = get_instance()->output_file;
+	if (file) {
+		fclose(file);
 	}
 
 	orb_unsubscribe(position_sub);
@@ -267,8 +296,9 @@ $ project_brett start -l -f 20 -n "test.txt"
 	PRINT_MODULE_USAGE_NAME("Project Brett (IR Data Collection)", "template");
 	PRINT_MODULE_USAGE_COMMAND("start");
 	PRINT_MODULE_USAGE_PARAM_FLAG('l', "Log/print values", true);
-	PRINT_MODULE_USAGE_PARAM_STRING('n', "out.txt", NULL, "Output file name", false);
-	PRINT_MODULE_USAGE_COMMAND("close-file");
+	PRINT_MODULE_USAGE_PARAM_FLAG('d', "Use dummy values", true);
+	PRINT_MODULE_USAGE_PARAM_INT('f', 2, 1, 30, "Recording frequency", true);
+	PRINT_MODULE_USAGE_PARAM_STRING('n', "out.txt", NULL, "Output file name", true);
 	PRINT_MODULE_USAGE_DEFAULT_COMMANDS();
 
 	return 0;

@@ -86,12 +86,13 @@ private:
 	uORB::Subscription	_parameter_update_sub{ORB_ID(parameter_update)};
 
 	// Functions
-	// void close_file();
 
 	// Global vars
 	FILE *output_file;
 	bool log_flag;
-	bool file_open;
+	bool dummy_flag;
+	int frequency;
+	HG_Temp temp_sensor;
 
 };
 
