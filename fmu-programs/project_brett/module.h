@@ -38,6 +38,7 @@
 #include <uORB/Subscription.hpp>
 #include <uORB/topics/parameter_update.h>
 #include <stdio.h>
+#include "hg_temp.h"
 
 extern "C" __EXPORT int project_brett_main(int argc, char *argv[]);
 
@@ -84,9 +85,13 @@ private:
 	// Subscriptions
 	uORB::Subscription	_parameter_update_sub{ORB_ID(parameter_update)};
 
+	// Functions
+	// void close_file();
+
+	// Global vars
 	FILE *output_file;
 	bool log_flag;
-
+	bool file_open;
 
 };
 

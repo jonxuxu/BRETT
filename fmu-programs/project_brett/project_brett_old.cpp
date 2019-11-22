@@ -49,39 +49,39 @@
 // /* main */
 // int project_brett_main(int argc, char *argv[])
 // {
-//     // FILE *output = NULL;
-//     // output = fopen("/fs/microsd/data/example.txt", "w");
-//     // if (output == NULL) {
-//     //     printf("file open failed!\n");
-//     // }
+//     FILE *output = NULL;
+//     output = fopen("/fs/microsd/data/example.txt", "w");
+//     if (output == NULL) {
+//         printf("file open failed!\n");
+//     }
 
-//     // fprintf(output, "Hello World!\n");
+//     fprintf(output, "Hello World!\n");
 
 // 	PX4_INFO("Hello Hovergames TEMP!");
 
-// 	// HG_Temp temp;
+// 	HG_Temp temp;
 
-// 	// int counter = 5;
+// 	int counter = 5;
 
-// 	// // prints ambient and object temperature in console {counter} times
-// 	// printf("%02i |  Ambient Temp |  Object Temp\n", counter);
-// 	// printf("-----------------------------------\n");
+// 	// prints ambient and object temperature in console {counter} times
+// 	printf("%02i |  Ambient Temp |  Object Temp\n", counter);
+// 	printf("-----------------------------------\n");
 
-//     // fprintf(output, "%02i | Ambient Temp | Object Temp\n", counter);
-//     // fprintf(output, "---------------------------------\n");
+//     fprintf(output, "%02i | Ambient Temp | Object Temp\n", counter);
+//     fprintf(output, "---------------------------------\n");
 
-// 	// for (int i = 1; i <= counter; i++) {
-// 	// 	printf("%02i |  %+2.2f  |  %+2.2f  \n", i, temp.readAmbientTempC(), temp.readObjectTempC());
+// 	for (int i = 1; i <= counter; i++) {
+// 		printf("%02i |  %+2.2f  |  %+2.2f  \n", i, temp.readAmbientTempC(), temp.readObjectTempC());
 
-//     //     fprintf(output, "%02i |  %+2.2f  |  %+2.2f  \n", i, temp.readAmbientTempC(), temp.readObjectTempC());
+//         fprintf(output, "%02i |  %+2.2f  |  %+2.2f  \n", i, temp.readAmbientTempC(), temp.readObjectTempC());
 
-// 	// 	sleep(1);
-// 	// }
+// 		sleep(1);
+// 	}
 
-//     // // fprintf(output, "Done!");
-//     // fclose(output);
+//     // fprintf(output, "Done!");
+//     fclose(output);
 
-// 	// PX4_INFO("Hovergames TEMP exit"); // print in console 
+// 	PX4_INFO("Hovergames TEMP exit"); // print in console 
 
 // 	return Module::main(argc, argv);
 // } /* end: main */
