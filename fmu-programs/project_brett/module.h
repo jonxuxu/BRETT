@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013-2015 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2018 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,56 +31,62 @@
  *
  ****************************************************************************/
 
-/**
- * @file project_brett.cpp
- *
- *
- *
- * @author William Qin <w29qin@uwaterloo.ca>
- */
+#pragma once
 
-#include "hg_temp.h"
+#include <px4_platform_common/module.h>
+#include <px4_platform_common/module_params.h>
+#include <uORB/Subscription.hpp>
+#include <uORB/topics/parameter_update.h>
 #include <stdio.h>
-using namespace std;
 
 extern "C" __EXPORT int project_brett_main(int argc, char *argv[]);
 
-/* main */
-int project_brett_main(int argc, char *argv[])
+class Module : public ModuleBase<Module>, public ModuleParams
 {
-    FILE *output = NULL;
-    output = fopen("/fs/microsd/data/example.txt", "w");
-    if (output == NULL) {
-        printf("file open failed!\n");
-    }
+public:
+	Module();
 
-    fprintf(output, "Hello World!\n");
+	virtual ~Module() = default;
 
-	PX4_INFO("Hello Hovergames TEMP!");
+	/** @see ModuleBase */
+	static int task_spawn(int argc, char *argv[]);
 
-	HG_Temp temp;
+	/** @see ModuleBase */
+	static Module *instantiate(int argc, char *argv[]);
 
-	int counter = 20;
+	/** @see ModuleBase */
+	static int custom_command(int argc, char *argv[]);
 
-	// prints ambient and object temperature in console 20 times
-	printf("%02i |  Ambient Temp |  Object Temp\n", counter);
-	printf("-----------------------------------\n");
+	/** @see ModuleBase */
+	static int print_usage(const char *reason = nullptr);
 
-    fprintf(output, "%02i | Ambient Temp | Object Temp\n", counter);
-    fprintf(output, "---------------------------------\n");
+	/** @see ModuleBase::run() */
+	void run() override;
 
-	for (int i = 1; i <= counter; i++) {
-		printf("%02i |  %+2.2f  |  %+2.2f  \n", i, temp.readAmbientTempC(), temp.readObjectTempC());
+	/** @see ModuleBase::print_status() */
+	int print_status() override;
 
-        fprintf(output, "%02i |  %+2.2f  |  %+2.2f  \n", i, temp.readAmbientTempC(), temp.readObjectTempC());
+private:
 
-		sleep(1);
-	}
+	/**
+	 * Check for parameter changes and update them if needed.
+	 * @param parameter_update_sub uorb subscription to parameter_update
+	 * @param force for a parameter update
+	 */
+	void parameters_update(bool force = false);
 
-    // fprintf(output, "Done!");
-    fclose(output);
 
-	PX4_INFO("Hovergames TEMP exit"); // print in console 
+	DEFINE_PARAMETERS(
+		(ParamInt<px4::params::SYS_AUTOSTART>) _param_sys_autostart,   /**< example parameter */
+		(ParamInt<px4::params::SYS_AUTOCONFIG>) _param_sys_autoconfig  /**< another parameter */
+	)
 
-	return 0;
-} /* end: main */
+	// Subscriptions
+	uORB::Subscription	_parameter_update_sub{ORB_ID(parameter_update)};
+
+	FILE *output_file;
+	bool log_flag;
+
+
+};
+

@@ -37,6 +37,6 @@ px4_add_module(
 	STACK_MAIN 2000
 	COMPILE_FLAGS -O0
 	SRCS
-		project_brett.cpp
+		module.cpp
 	DEPENDS
 	)
