@@ -89,9 +89,7 @@ private:
 
 	// Global vars
 	FILE *output_file;
-	bool log_flag;
-	bool dummy_flag;
-	int frequency;
+	// int frequency;
 	HG_Temp temp_sensor;
 
 };

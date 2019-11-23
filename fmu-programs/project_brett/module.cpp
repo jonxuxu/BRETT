@@ -94,17 +94,17 @@ int Module::task_spawn(int argc, char *argv[])
 Module *Module::instantiate(int argc, char *argv[])
 {
 	char *file_name = NULL;
-	bool log_flag = false;
-	bool dummy_flag = false;
+	// bool log_flag = false;
+	// bool dummy_flag = false;
 	bool error_flag = false;
-	int frequency_param = 2;
+	// int frequency_param = 2;
 
 	int myoptind = 1;
 	int ch;
 	const char *myoptarg = nullptr;
 
 	// parse CLI arguments
-	while ((ch = px4_getopt(argc, argv, "n:f:l:d", &myoptind, &myoptarg)) != EOF) {
+	while ((ch = px4_getopt(argc, argv, "n:f", &myoptind, &myoptarg)) != EOF) {
 		switch (ch) {
 			case 'n':
 			{
@@ -116,17 +116,17 @@ Module *Module::instantiate(int argc, char *argv[])
 				break;
 			}
 
-			case 'f':
-				frequency_param = (int)strtol(myoptarg, nullptr, 10);
-				break;
+			// case 'f':
+			// 	frequency_param = (int)strtol(myoptarg, nullptr, 10);
+			// 	break;
 
-			case 'l':
-				log_flag = true;
-				break;
+			// case 'l':
+			// 	log_flag = true;
+			// 	break;
 
-			case 'd':
-				dummy_flag = true;
-				break;
+			// case 'd':
+			// 	dummy_flag = true;
+			// 	break;
 
 			case '?':
 				error_flag = true;
@@ -155,17 +155,17 @@ Module *Module::instantiate(int argc, char *argv[])
 		PX4_ERR("alloc failed");
 	}
 
-	instance->log_flag = log_flag;
-	instance->dummy_flag = dummy_flag;
-	FILE *output_file = fopen(file_name, "w");
+	// instance->log_flag = log_flag;
+	// instance->dummy_flag = dummy_flag;
+	FILE *output_file = fopen(file_name, "w+");
 	if (output_file == NULL) {
 		PX4_ERR("File failed to open");
 	}
 	instance->output_file = output_file;
-	instance->frequency = frequency_param;
+	// instance->frequency = frequency_param;
 
 	printf("%s\n", file_name);
-	printf("Logging: %d, Frequency: %d\n", instance->log_flag, instance->frequency);
+	// printf("Frequency: %d\n", instance->frequency);
 
 	fprintf(instance->output_file, "time,x,y,ambient_temp,obj_temp\n");
 
@@ -184,8 +184,11 @@ void Module::run()
 	// Run the loop synchronized to the gps topic publication
 	int position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
 
+	Module *instance = get_instance();
+
 	/* limit the update rate to 5 Hz */
-	orb_set_interval(position_sub, (int)(1000/get_instance()->frequency));
+	// orb_set_interval(position_sub, (int)(1000/instance->frequency));
+	orb_set_interval(position_sub, 200);
 
 	px4_pollfd_struct_t fds[1];
 	fds[0].fd = position_sub;
@@ -193,22 +196,27 @@ void Module::run()
 
 	struct vehicle_local_position_s raw;
 
-	// unsigned long long initial_time = 0;
-	// bool time_set = false;
+	unsigned long long raw_timestamp = 0;
+	unsigned long long elapsed_time = 0;
+	unsigned long long initial_time = 0;
 
-	// double dummy_x = 0;
-	// double dummy_y = 0;
-	// double dummy_max_x = 400;
-	// double dummy_max_y = 400;
-	// double dummy_row_height = 20;
+	bool time_set = false;
+
+	double raw_x = 0.0;
+	double raw_y = 0.0;
+
+	double ambient_temp = 0.0;
+	double obj_temp = 0.0;
+
+	FILE* file = instance->output_file;
 
 	// initialize parameters
 	parameters_update(true);
 
 	while (!should_exit()) {
 
-		// wait for up to 1000ms for data
-		int pret = px4_poll(fds, (sizeof(fds) / sizeof(fds[0])), 1000);
+		// wait for up to 200ms for data
+		int pret = px4_poll(fds, (sizeof(fds) / sizeof(fds[0])), 200);
 
 		if (pret == 0) {
 			// Timeout: let the loop run anyway, don't do `continue` here
@@ -218,36 +226,38 @@ void Module::run()
 			PX4_ERR("poll error %d, %d", pret, errno);
 			px4_usleep(50000);
 			continue;
-
 		} else if (fds[0].revents & POLLIN) {
 			orb_copy(ORB_ID(vehicle_local_position), position_sub, &raw);
 
-			unsigned long long raw_timestamp = raw.timestamp;
-			// if (!time_set) {
-			// 	initial_time = raw_timestamp;
-			// 	time_set = true;
-			// }
-			// unsigned long long elapsed_time = raw_timestamp - initial_time;
-
-			double raw_x = (double)raw.x;
-			double raw_y = (double)raw.y;
-
-			if (get_instance()->dummy_flag) {
-
+			raw_timestamp = raw.timestamp;
+			if (!time_set) {
+				initial_time = raw_timestamp;
+				time_set = true;
 			}
+			elapsed_time = raw_timestamp - initial_time;
 
-			double ambient_temp = 0.0;
-			double obj_temp = 0.0;
-			ambient_temp = get_instance()->temp_sensor.readAmbientTempC();
-			obj_temp = get_instance()->temp_sensor.readObjectTempC();
+			raw_x = (double)raw.x;
+			raw_y = (double)raw.y;
+			ambient_temp = instance->temp_sensor.readAmbientTempC();
+			obj_temp = instance->temp_sensor.readObjectTempC();
 
-			FILE* file = get_instance()->output_file;
+			printf("Time: %llu, X: %.4f, Y: %.4f, Ambient Temp: %.2f, Obj Temp: %.2f\n", elapsed_time, raw_x, raw_y, ambient_temp, obj_temp);
+
 			if (file) {
-				fprintf(file, "%llu,%.8f,%.8f,%.8f,%.8f\n", raw_timestamp, raw_x, raw_y, ambient_temp, obj_temp);
-				if (get_instance()->log_flag) {
-					printf("Time: %llu, X: %.8f, Y: %.8f, Ambient Temp: %.4f, Obj Temp: %.4f\n", raw_timestamp, raw_x, raw_y, ambient_temp, obj_temp);
-				}
+				char result[50];
+				sprintf(result, "%llu,", elapsed_time);
+				fputs(result, file);
+				sprintf(result, "%.8f,", raw_x);
+				fputs(result, file);
+				sprintf(result, "%.8f,", raw_y);
+				fputs(result, file);
+				sprintf(result, "%.2f,", ambient_temp);
+				fputs(result, file);
+				sprintf(result, "%.2f", obj_temp);
+				fputs(result, file);
+				fputs("\n", file);
 			}
+
 		}
 
 		parameters_update();
@@ -255,7 +265,6 @@ void Module::run()
 
 	printf("Run done\n");
 
-	FILE* file = get_instance()->output_file;
 	if (file) {
 		fclose(file);
 	}
@@ -295,9 +304,9 @@ $ project_brett start -l -f 20 -n "test.txt"
 
 	PRINT_MODULE_USAGE_NAME("Project Brett (IR Data Collection)", "template");
 	PRINT_MODULE_USAGE_COMMAND("start");
-	PRINT_MODULE_USAGE_PARAM_FLAG('l', "Log/print values", true);
-	PRINT_MODULE_USAGE_PARAM_FLAG('d', "Use dummy values", true);
-	PRINT_MODULE_USAGE_PARAM_INT('f', 2, 1, 30, "Recording frequency", true);
+	// PRINT_MODULE_USAGE_PARAM_FLAG('l', "Log/print values", true);
+	// PRINT_MODULE_USAGE_PARAM_FLAG('d', "Use dummy values", true);
+	// PRINT_MODULE_USAGE_PARAM_INT('f', 2, 1, 30, "Recording frequency", true);
 	PRINT_MODULE_USAGE_PARAM_STRING('n', "out.txt", NULL, "Output file name", true);
 	PRINT_MODULE_USAGE_DEFAULT_COMMANDS();
 
