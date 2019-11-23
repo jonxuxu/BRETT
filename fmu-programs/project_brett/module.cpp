@@ -52,27 +52,14 @@
 int Module::print_status()
 {
 	PX4_INFO("Project_Brett is running");
-	// TODO: print additional runtime information about the state of the module
 
 	return 0;
 }
 
 int Module::custom_command(int argc, char *argv[])
 {
-	// if (!is_running()) {
-	// 	print_usage("not running");
-	// 	return 1;
-	// }
-
-	// // additional custom commands can be handled like this:
-	// if (!strcmp(argv[0], "close-file")) {
-	// 	get_instance()->close_file();
-	// 	return 0;
-	// }
-
 	return print_usage("unknown command");
 }
-
 
 int Module::task_spawn(int argc, char *argv[])
 {
@@ -94,17 +81,14 @@ int Module::task_spawn(int argc, char *argv[])
 Module *Module::instantiate(int argc, char *argv[])
 {
 	char *file_name = NULL;
-	// bool log_flag = false;
-	// bool dummy_flag = false;
 	bool error_flag = false;
-	// int frequency_param = 2;
 
 	int myoptind = 1;
 	int ch;
 	const char *myoptarg = nullptr;
 
 	// parse CLI arguments
-	while ((ch = px4_getopt(argc, argv, "n:f", &myoptind, &myoptarg)) != EOF) {
+	while ((ch = px4_getopt(argc, argv, "n", &myoptind, &myoptarg)) != EOF) {
 		switch (ch) {
 			case 'n':
 			{
@@ -115,18 +99,6 @@ Module *Module::instantiate(int argc, char *argv[])
 				strcat(file_name, myoptarg);
 				break;
 			}
-
-			// case 'f':
-			// 	frequency_param = (int)strtol(myoptarg, nullptr, 10);
-			// 	break;
-
-			// case 'l':
-			// 	log_flag = true;
-			// 	break;
-
-			// case 'd':
-			// 	dummy_flag = true;
-			// 	break;
 
 			case '?':
 				error_flag = true;
@@ -155,17 +127,13 @@ Module *Module::instantiate(int argc, char *argv[])
 		PX4_ERR("alloc failed");
 	}
 
-	// instance->log_flag = log_flag;
-	// instance->dummy_flag = dummy_flag;
 	FILE *output_file = fopen(file_name, "w+");
 	if (output_file == NULL) {
 		PX4_ERR("File failed to open");
 	}
 	instance->output_file = output_file;
-	// instance->frequency = frequency_param;
 
 	printf("%s\n", file_name);
-	// printf("Frequency: %d\n", instance->frequency);
 
 	fprintf(instance->output_file, "time,x,y,ambient_temp,obj_temp\n");
 
@@ -298,15 +266,12 @@ This module collects IR data and outputs it to a file
 
 ### Examples
 CLI usage example:
-$ project_brett start -l -f 20 -n "test.txt"
+$ project_brett start -n "test.txt"
 
 )DESCR_STR");
 
 	PRINT_MODULE_USAGE_NAME("Project Brett (IR Data Collection)", "template");
 	PRINT_MODULE_USAGE_COMMAND("start");
-	// PRINT_MODULE_USAGE_PARAM_FLAG('l', "Log/print values", true);
-	// PRINT_MODULE_USAGE_PARAM_FLAG('d', "Use dummy values", true);
-	// PRINT_MODULE_USAGE_PARAM_INT('f', 2, 1, 30, "Recording frequency", true);
 	PRINT_MODULE_USAGE_PARAM_STRING('n', "out.txt", NULL, "Output file name", true);
 	PRINT_MODULE_USAGE_DEFAULT_COMMANDS();
 
