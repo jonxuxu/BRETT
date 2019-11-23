@@ -1,6 +1,5 @@
-from time import sleep
+import time
 from picamera import PiCamera
-import calendar
 import os
 
 # Camera setup
@@ -10,18 +9,18 @@ camera.start_preview()
 
 # Create new log file
 count = 1
-while(not path.exists(str(count))){
+while(os.path.exists(str(count))):
     count += 1
-}
+
 os.mkdir(str(count))
 f = open(str(count) + "/log.txt", "w+")
-f.write("Timestamp:\n")
+f.write("Timestamp: " + str(time.time()) + "\n")
 
 # Camera warm-up time
-sleep(2)
-for filename in camera.capture_continuous(str(count) + '/{counter:03d}.jpg'):
-    f.write(calendar.timegm(dt.utctimetuple() + "\n")
+time.sleep(1)
+for filename in camera.capture_continuous(str(count) + "/{counter:03d}.jpg"):
+    f.write(str(time.time()) + "\n")
     print('Captured %s' % filename)
-    sleep(5)  # wait 5 seconds
+    time.sleep(5)  # wait 5 seconds
 
 f.close()
