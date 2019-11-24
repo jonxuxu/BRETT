@@ -7,7 +7,7 @@ from subprocess import call
 # Camera setup
 camera = PiCamera()
 camera.resolution = (2592, 1944)  # Resolution of pi camera 1.3
-camera.start_preview()
+# camera.start_preview()
 
 # Wait until pins GPIO16 and GPIO21 are connected
 GPIO.setmode(GPIO.BCM)
@@ -22,8 +22,7 @@ def main():
         while(not GPIO.input(16)):
             if(GPIO.input(20)):  # Connect BCM 20 to 21 to shutdown
                 return
-            print(
-                "Pin disconnected. Connect BCM pins 16 and 21 to start capture. Connect BCM 20 to 21 to shutdown.")
+            print("Pin disconnected. Connect BCM pins 16 and 21 to start capture. Connect BCM 20 to 21 to shutdown.")
             time.sleep(1)
         print("Starting capture.")
 
