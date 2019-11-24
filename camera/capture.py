@@ -2,6 +2,7 @@ import time
 from picamera import PiCamera
 import os
 import RPi.GPIO as GPIO
+from subprocess import call
 
 # Camera setup
 camera = PiCamera()
@@ -11,9 +12,12 @@ camera.start_preview()
 # Wait until pins GPIO16 and GPIO21 are connected
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(20, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(21, GPIO.OUT)
 GPIO.output(21, 1)
 while(not GPIO.input(16)):
+    if(GPIO.input(20)):  # Connect BCM 20 to 21 to shutdown
+        break
     while(not GPIO.input(16)):
         print("Pin disconnected. Connect BCM pins 16 and 21 to start capture. Disconnect pins to stop.")
         time.sleep(1)
@@ -37,3 +41,11 @@ while(not GPIO.input(16)):
             break
         time.sleep(5)  # wait 5 seconds
     f.close()
+
+while(True):
+    if(GPIO.input(20)):
+        print("Shutting down")
+        time.sleep(1)
+        call("sudo shutdown -h now", shell=True)
+    print("Connect BCM 20 to 21 to shutdown headless")
+    time.sleep(3)
