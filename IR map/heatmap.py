@@ -25,8 +25,12 @@ heatMap = sns.heatmap(data, cmap='coolwarm', center=1, yticklabels=False, xtickl
 heatMap.invert_yaxis()
 heatMap.set_ylabel('')
 heatMap.set_xlabel('')
-plt.show()
 
-# Sorted data
+# Save a png of the created heatmap
+fig = heatMap.get_figure()
+fig.savefig("heatmap.png")
+
+# Printing out the created maps and tables
+plt.show()
 print(df)
 print(data)
