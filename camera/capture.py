@@ -8,11 +8,16 @@ camera = PiCamera()
 camera.resolution = (2592, 1944)  # Resolution of pi camera 1.3
 camera.start_preview()
 
-# Wait until pins 4(5V) and 8(GPIO14) are connected
+# Wait until pins GPIO16 and GPIO21 are connected
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(14, GPIO.IN)
-print("Pin disconnected. Connect pin 4 to 8 to start capture. Disconnect pins to stop.")
-while(not GPIO.input(0)):
+GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(21, GPIO.OUT)
+GPIO.output(21, 1);
+
+if(not GPIO.input(16)):
+	print("Pin disconnected. Connect BCM pins 16 and 21 to start capture. Disconnect pins to stop.")
+while(not GPIO.input(16)):
+    print(GPIO.input(16))
     time.sleep(1)
 print("Starting capture.")
 
@@ -29,8 +34,8 @@ f.write("Timestamp: " + str(time.time()) + "\n")
 for filename in camera.capture_continuous(str(count) + "/{counter:03d}.jpg"):
     f.write(str(time.time()) + "\n")
     print('Captured %s' % filename)
-    if(not GPIO.input(0)):
+    if(not GPIO.input(16)):
         print("Pin disconnected. Ending capture.")
+	break
     time.sleep(5)  # wait 5 seconds
-
 f.close()
