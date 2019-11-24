@@ -165,16 +165,19 @@ void Module::run()
 	struct vehicle_local_position_s raw;
 
 	unsigned long long raw_timestamp = 0;
-	unsigned long long elapsed_time = 0;
-	unsigned long long initial_time = 0;
+	// unsigned long long elapsed_time = 0;
+	// unsigned long long initial_time = 0;
 
-	bool time_set = false;
+	// bool time_set = false;
 
 	double raw_x = 0.0;
 	double raw_y = 0.0;
+	double raw_z = 0.0;
 
 	double ambient_temp = 0.0;
 	double obj_temp = 0.0;
+
+	double raw_yaw = 0.0;
 
 	FILE* file = instance->output_file;
 
@@ -198,26 +201,32 @@ void Module::run()
 			orb_copy(ORB_ID(vehicle_local_position), position_sub, &raw);
 
 			raw_timestamp = raw.timestamp;
-			if (!time_set) {
-				initial_time = raw_timestamp;
-				time_set = true;
-			}
-			elapsed_time = raw_timestamp - initial_time;
+			// if (!time_set) {
+			// 	initial_time = raw_timestamp;
+			// 	time_set = true;
+			// }
+			// elapsed_time = raw_timestamp - initial_time;
 
 			raw_x = (double)raw.x;
 			raw_y = (double)raw.y;
+			raw_z = (double)raw.z;
+			raw_yaw = (double)raw.yaw;
 			ambient_temp = instance->temp_sensor.readAmbientTempC();
 			obj_temp = instance->temp_sensor.readObjectTempC();
 
-			printf("Time: %llu, X: %.4f, Y: %.4f, Ambient Temp: %.2f, Obj Temp: %.2f\n", elapsed_time, raw_x, raw_y, ambient_temp, obj_temp);
+			printf("Time: %llu, X: %.4f, Y: %.4f, Z: %.4f, Yaw: %.4f, Ambient Temp: %.2f, Obj Temp: %.2f\n", raw_timestamp, raw_x, raw_y, raw_z, raw_yaw, ambient_temp, obj_temp);
 
 			if (file) {
 				char result[50];
-				sprintf(result, "%llu,", elapsed_time);
+				sprintf(result, "%llu,", raw_timestamp);
 				fputs(result, file);
 				sprintf(result, "%.8f,", raw_x);
 				fputs(result, file);
 				sprintf(result, "%.8f,", raw_y);
+				fputs(result, file);
+				sprintf(result, "%.8f,", raw_z);
+				fputs(result, file);
+				sprintf(result, "%.8f,", raw_yaw);
 				fputs(result, file);
 				sprintf(result, "%.2f,", ambient_temp);
 				fputs(result, file);
