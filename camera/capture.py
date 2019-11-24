@@ -23,7 +23,7 @@ def main():
             if(GPIO.input(20)):  # Connect BCM 20 to 21 to shutdown
                 return
             print(
-                "Pin disconnected. Connect BCM pins 16 and 21 to start capture. Disconnect pins to stop.")
+                "Pin disconnected. Connect BCM pins 16 and 21 to start capture. Connect BCM 20 to 21 to shutdown.")
             time.sleep(1)
         print("Starting capture.")
 
