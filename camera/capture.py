@@ -34,6 +34,6 @@ while(not GPIO.input(16)):
         print('Captured %s' % filename)
         if(not GPIO.input(16)):
             print("Pin disconnected. Ending capture.")
-        break
+            break
         time.sleep(5)  # wait 5 seconds
     f.close()
