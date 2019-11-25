@@ -5,7 +5,7 @@ import seaborn as sns
 import pandas as pd
 
 # File I/O
-with open('out.txt', encoding='utf-8') as file:
+with open('test_flight_3.txt', encoding='utf-8') as file:
     posx = []
     posy = []
     temp = []
@@ -14,13 +14,14 @@ with open('out.txt', encoding='utf-8') as file:
         line = line.strip().split(',')
         posx.append(float(line[1]))
         posy.append(float(line[2]))
-        temp.append(float(line[4]) - float(line[3]))
+        temp.append(float(line[6]) - float(line[5]))
 
 # Create heat map
 reds = sns.set_palette(sns.color_palette("coolwarm", 25))  # turn down the intensity
 df = pd.DataFrame({'PositionX': posx, 'PositionY': posy, 'Temperature': temp})
 data = df.pivot(index="PositionX", columns="PositionY", values="Temperature")
 # heatMap = sns.heatmap(data, annot=True, cmap="coolwarm", center=1)  # change center value to change color scale
+plt.figure(figsize=(95.28, 47.56))
 heatMap = sns.heatmap(data, cmap='coolwarm', center=1, yticklabels=False, xticklabels=False, cbar=False)
 heatMap.invert_yaxis()
 heatMap.set_ylabel('')
