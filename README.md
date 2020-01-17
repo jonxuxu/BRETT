@@ -1,6 +1,7 @@
 Project BRETT
 ---
 This project was created for the Hackster.io contest, Fight Fire with Flyers
+Contest url: https://www.linkedin.com/in/jonathanxu01
 
 The repository will be updated with the work of all group members.
 
