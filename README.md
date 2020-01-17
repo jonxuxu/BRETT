@@ -1,7 +1,8 @@
 Project BRETT
 ---
 This project was created for the Hackster.io contest, Fight Fire with Flyers
-Contest url: https://www.linkedin.com/in/jonathanxu01
+
+Contest url: https://www.hackster.io/jonathan-xu/brett-the-fire-mapping-drone-94fc1c
 
 The repository will be updated with the work of all group members.
 
