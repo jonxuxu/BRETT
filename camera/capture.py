@@ -19,11 +19,13 @@ GPIO.output(21, 1)
 
 def main():
     while(not GPIO.input(16)):
+        '''
         while(not GPIO.input(16)):
             if(GPIO.input(20)):  # Connect BCM 20 to 21 to shutdown
                 return
             print("Pin disconnected. Connect BCM pins 16 and 21 to start capture. Connect BCM 20 to 21 to shutdown.")
             time.sleep(1)
+        '''
         print("Starting capture.")
 
         # Create new log file
@@ -39,16 +41,19 @@ def main():
         for filename in camera.capture_continuous(str(count) + "/{counter:03d}.jpg"):
             f.write(str(time.time()) + "\n")
             print('Captured %s' % filename)
+            '''
             if(not GPIO.input(16)):
                 print("Pin disconnected. Ending capture.")
                 break
-            time.sleep(5)  # wait 5 seconds
+            '''
+            time.sleep(2)  # wait 2 seconds
         f.close()
 
 
 if __name__ == "__main__":
     main()
 
+'''
 while(True):
     if(GPIO.input(20)):
         print("Shutting down")
@@ -56,3 +61,4 @@ while(True):
         call("sudo shutdown -h now", shell=True)
     print("Connect BCM 20 to 21 to shutdown headless")
     time.sleep(3)
+'''
