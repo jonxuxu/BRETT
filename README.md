@@ -1,6 +1,6 @@
-Project B.R.E.T.T. - SE 101 Final Project
+Project FireWatch
 ---
-This project was created for the SE 101 course.
+This project was created for the Hackster.io contest, Fight Fire with Flyers
 
 The repository will be updated with the work of all group members.
 
