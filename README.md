@@ -6,7 +6,8 @@ Contest url: https://www.hackster.io/jonathan-xu/brett-the-fire-mapping-drone-94
 
 The repository will be updated with the work of all group members.
 
-The demo will be posted upon completion.
+## Demo video:
+https://www.youtube.com/watch?v=IL5uXbhU5dQ
 
 References
 ---
