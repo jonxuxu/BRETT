@@ -1,4 +1,6 @@
 Project BRETT
+https://jonathanxu.com/projects/brett
+
 ---
 This project was created for the Hackster.io contest, Fight Fire with Flyers
 
